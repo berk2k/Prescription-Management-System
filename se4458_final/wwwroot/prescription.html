@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine List</title>
+</head>
+<body>
+
+    <h1>Medicine List</h1>
+
+    <div>
+        <label for="pharmacyName">Pharmacy Name:</label>
+        <input type="text" id="pharmacyName">
+    </div>
+
+    <div>
+        <label for="personName">Person's Name:</label>
+        <input type="text" id="personName">
+    </div>
+
+    <div>
+        <label for="personID">Person's ID (TC Kimlik):</label>
+        <input type="text" id="personID">
+    </div>
+
+    <div>
+        <label for="medicineName">Medicine Name:</label>
+        <input type="text" id="medicineName">
+        <button onclick="addMedicine()">Add Medicine</button>
+    </div>
+
+    <ul id="medicineList"></ul>
+
+    <script>
+        function addMedicine() {
+            var pharmacyName = document.getElementById('pharmacyName').value;
+            var personName = document.getElementById('personName').value;
+            var personID = document.getElementById('personID').value;
+            var medicineName = document.getElementById('medicineName').value;
+
+            if (!pharmacyName || !personName || !personID || !medicineName) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            // Make a POST request to the CreatePrescription endpoint
+            fetch('api/Prescription/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    PharmacyName: pharmacyName,
+                    Tc: personID,
+                    FullName: personName,
+                    MedicineName: medicineName,
+                    Price: Math.random() * 100,
+                }),
+
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isSuccess) {
+                        updateUI(pharmacyName, personName, personID, medicineName, data.result.prescriptionId);
+                    } else {
+                        alert(`Failed to create prescription. Error: ${data.errorMessage}`);
+                    }
+                })
+                .catch(error => {
+                    alert(`An error occurred while adding medicine. ${error}`);
+                });
+        }
+
+        function updateUI(pharmacyName, personName, personID, medicineName, prescriptionId) {
+            var medicineList = document.getElementById('medicineList');
+            var listItem = document.createElement('li');
+
+            // Set the prescription ID as a data attribute
+            listItem.dataset.prescriptionId = prescriptionId;
+
+            listItem.innerHTML = `
+            <strong>${pharmacyName}</strong> - ${personName} (TC Kimlik: ${personID}) - ${medicineName}
+            <span>ID: ${prescriptionId}</span>
+            <button onclick="updateMedicine(this)">Update</button>
+            <button onclick="deleteMedicine(this)">Delete</button>
+        `;
+            medicineList.appendChild(listItem);
+
+            // Clear input fields after adding
+            document.getElementById('pharmacyName').value = '';
+            document.getElementById('personName').value = '';
+            document.getElementById('personID').value = '';
+            document.getElementById('medicineName').value = '';
+        }
+
+        function updateMedicine(button) {
+            // Your update logic here
+        }
+
+        function deleteMedicine(button) {
+            var listItem = button.parentNode;
+            var prescriptionId = listItem.dataset.prescriptionId;
+
+            if (!prescriptionId) {
+                alert("Prescription ID is undefined or missing.");
+                return;
+            }
+
+            fetch(`/api/Prescription/delete/${prescriptionId}`, {
+                method: 'DELETE',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isSuccess) {
+                        listItem.parentNode.removeChild(listItem);
+                        alert("Prescription deleted successfully.");
+                    } else {
+                        alert(`Failed to delete prescription. Error: ${data.errorMessage}`);
+                    }
+                })
+                .catch(error => {
+                    alert(`An error occurred while deleting prescription. ${error}`);
+                });
+        }
+    </script>
+
+</body>
+</html>

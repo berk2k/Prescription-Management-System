@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <br>
+
+        <button type="button" onclick="submitForm()">Login</button>
+    </form>
+
+    <script>
+        function submitForm() {
+            
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            
+            var requestBody = {
+                username: username,
+                password: password
+            };
+
+            
+            fetch('/api/Pharmacie/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.IsSuccess) {
+                    
+                    window.location.href = 'prescription.html';
+                } else {
+                    
+                    console.error(data.ErrorMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

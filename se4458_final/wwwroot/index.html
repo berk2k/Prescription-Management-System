@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Query</title>
+</head>
+<body>
+
+    <h1>Medicine Query</h1>
+
+    <label for="medicineName">Enter Medicine Name:</label>
+    <input type="text" id="medicineName" placeholder="Type medicine name here">
+    <button onclick="getMedicines()">Get Medicines</button>
+
+    <div id="result"></div>
+
+    <script>
+        function getMedicines() {
+            var medicineName = document.getElementById('medicineName').value;
+
+            fetch(`api/MedicineQuery/GetMedicines?name=${medicineName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isSuccess) {
+                        displayMedicines(data.result);
+                    } else {
+                        displayError(data.errorMessage);
+                    }
+                })
+                .catch(error => {
+                    displayError('An error occurred while fetching data.');
+                    console.error(error);
+                });
+        }
+
+        function displayMedicines(medicines) {
+            var resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+
+            if (medicines.length === 0) {
+                resultDiv.innerHTML = 'No medicines found.';
+                return;
+            }
+
+            var ul = document.createElement('ul');
+            medicines.forEach(medicine => {
+                var li = document.createElement('li');
+                li.textContent = medicine;
+                ul.appendChild(li);
+            });
+
+            resultDiv.appendChild(ul);
+        }
+
+        function displayError(errorMessage) {
+            var resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div style="color: red;">Error: ${errorMessage}</div>`;
+        }
+    </script>
+
+</body>
+</html>
